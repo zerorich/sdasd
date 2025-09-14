@@ -10,7 +10,6 @@ const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Import routes
-const authRoutes = require('./routes/auth');
 const appointmentRoutes = require('./routes/appointments');
 const contactRoutes = require('./routes/contact');
 const doctorRoutes = require('./routes/doctors');
@@ -53,7 +52,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/doctors', doctorRoutes);

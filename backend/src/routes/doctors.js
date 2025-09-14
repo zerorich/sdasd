@@ -1,7 +1,7 @@
 const express = require('express');
 const Doctor = require('../models/Doctor');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { protect, authorize } = require('../middleware/auth');
+// Auth middleware removed - no authentication required
 const { validateObjectId, validatePagination } = require('../middleware/validation');
 
 const router = express.Router();
@@ -96,22 +96,10 @@ const getTopRatedDoctors = asyncHandler(async (req, res) => {
 
 // @desc    Create doctor profile
 // @route   POST /api/doctors
-// @access  Private (Doctor)
+// @access  Public
 const createDoctorProfile = asyncHandler(async (req, res) => {
-  // Check if user already has a doctor profile
-  const existingDoctor = await Doctor.findOne({ user: req.user.id });
-  if (existingDoctor) {
-    return res.status(400).json({
-      success: false,
-      message: 'Doctor profile already exists'
-    });
-  }
-
   // Create doctor profile
-  const doctor = await Doctor.create({
-    ...req.body,
-    user: req.user.id
-  });
+  const doctor = await Doctor.create(req.body);
 
   const populatedDoctor = await Doctor.findById(doctor._id)
     .populate('user', 'firstName lastName phone avatar');
@@ -125,7 +113,7 @@ const createDoctorProfile = asyncHandler(async (req, res) => {
 
 // @desc    Update doctor profile
 // @route   PUT /api/doctors/:id
-// @access  Private (Doctor/Admin)
+// @access  Public
 const updateDoctorProfile = asyncHandler(async (req, res) => {
   let doctor = await Doctor.findById(req.params.id);
 
@@ -133,14 +121,6 @@ const updateDoctorProfile = asyncHandler(async (req, res) => {
     return res.status(404).json({
       success: false,
       message: 'Doctor profile not found'
-    });
-  }
-
-  // Check authorization
-  if (doctor.user.toString() !== req.user.id.toString() && req.user.role !== 'admin') {
-    return res.status(403).json({
-      success: false,
-      message: 'Not authorized to update this doctor profile'
     });
   }
 
@@ -158,7 +138,7 @@ const updateDoctorProfile = asyncHandler(async (req, res) => {
 
 // @desc    Delete doctor profile
 // @route   DELETE /api/doctors/:id
-// @access  Private (Admin)
+// @access  Public
 const deleteDoctorProfile = asyncHandler(async (req, res) => {
   const doctor = await Doctor.findById(req.params.id);
 
@@ -197,9 +177,9 @@ router.get('/specialties', getSpecialties);
 router.get('/specialty/:specialty', validatePagination, getDoctorsBySpecialty);
 router.get('/:id', validateObjectId('id'), getDoctor);
 
-// Admin only routes (CRUD operations)
-router.post('/', protect, authorize('admin'), createDoctorProfile);
-router.put('/:id', protect, authorize('admin'), validateObjectId('id'), updateDoctorProfile);
-router.delete('/:id', protect, authorize('admin'), validateObjectId('id'), deleteDoctorProfile);
+// All routes are now public (no authentication required)
+router.post('/', createDoctorProfile);
+router.put('/:id', validateObjectId('id'), updateDoctorProfile);
+router.delete('/:id', validateObjectId('id'), deleteDoctorProfile);
 
 module.exports = router;

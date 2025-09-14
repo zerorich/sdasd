@@ -9,7 +9,7 @@ const {
   getDoctorAppointments,
   getAvailability
 } = require('../controllers/appointmentController');
-const { protect, authorize } = require('../middleware/auth');
+// Auth middleware removed - no authentication required
 const { validateAppointment, validateObjectId } = require('../middleware/validation');
 
 const router = express.Router();
@@ -21,9 +21,9 @@ router.get('/:id', validateObjectId('id'), getAppointment);
 router.get('/doctor/:doctorId', validateObjectId('doctorId'), getDoctorAppointments);
 router.post('/', validateAppointment, createAppointment); // Public for client appointments
 
-// Admin only routes (CRUD operations)
-router.put('/:id', protect, authorize('admin'), validateObjectId('id'), updateAppointment);
-router.put('/:id/cancel', protect, authorize('admin'), validateObjectId('id'), cancelAppointment);
-router.put('/:id/reschedule', protect, authorize('admin'), validateObjectId('id'), rescheduleAppointment);
+// All routes are now public (no authentication required)
+router.put('/:id', validateObjectId('id'), updateAppointment);
+router.put('/:id/cancel', validateObjectId('id'), cancelAppointment);
+router.put('/:id/reschedule', validateObjectId('id'), rescheduleAppointment);
 
 module.exports = router;

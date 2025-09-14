@@ -1,7 +1,7 @@
 const express = require('express');
 const Contact = require('../models/Contact');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { protect, authorize } = require('../middleware/auth');
+// Auth middleware removed - no authentication required
 const { validateContactForm, validateObjectId, validatePagination } = require('../middleware/validation');
 
 const router = express.Router();
@@ -95,7 +95,7 @@ const getContactSubmission = asyncHandler(async (req, res) => {
 
 // @desc    Update contact status
 // @route   PUT /api/contact/:id/status
-// @access  Private (Admin)
+// @access  Public
 const updateContactStatus = asyncHandler(async (req, res) => {
   const { status, priority, assignedTo } = req.body;
 
@@ -128,9 +128,9 @@ const updateContactStatus = asyncHandler(async (req, res) => {
 
 // @desc    Respond to contact
 // @route   PUT /api/contact/:id/respond
-// @access  Private (Admin)
+// @access  Public
 const respondToContact = asyncHandler(async (req, res) => {
-  const { message } = req.body;
+  const { message, respondedBy } = req.body;
 
   const contact = await Contact.findById(req.params.id);
   if (!contact) {
@@ -140,7 +140,7 @@ const respondToContact = asyncHandler(async (req, res) => {
     });
   }
 
-  await contact.respond(message, req.user.id);
+  await contact.respond(message, respondedBy);
 
   // TODO: Send response notification to the contact person
 
@@ -194,9 +194,9 @@ router.get('/statistics', getContactStatistics);
 router.get('/overdue', getOverdueContacts);
 router.get('/:id', validateObjectId('id'), getContactSubmission);
 
-// Admin only routes (CRUD operations)
-router.post('/', protect, authorize('admin'), validateContactForm, submitContactForm);
-router.put('/:id/status', protect, authorize('admin'), validateObjectId('id'), updateContactStatus);
-router.put('/:id/respond', protect, authorize('admin'), validateObjectId('id'), respondToContact);
+// All routes are now public (no authentication required)
+router.post('/', validateContactForm, submitContactForm);
+router.put('/:id/status', validateObjectId('id'), updateContactStatus);
+router.put('/:id/respond', validateObjectId('id'), respondToContact);
 
 module.exports = router;

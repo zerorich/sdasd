@@ -1,7 +1,7 @@
 const express = require('express');
 const Service = require('../models/Service');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { protect, authorize } = require('../middleware/auth');
+// Auth middleware removed - no authentication required
 const { validateObjectId, validatePagination } = require('../middleware/validation');
 
 const router = express.Router();
@@ -136,7 +136,7 @@ const searchServices = asyncHandler(async (req, res) => {
 
 // @desc    Create service
 // @route   POST /api/services
-// @access  Private (Admin)
+// @access  Public
 const createService = asyncHandler(async (req, res) => {
   const service = await Service.create(req.body);
 
@@ -149,7 +149,7 @@ const createService = asyncHandler(async (req, res) => {
 
 // @desc    Update service
 // @route   PUT /api/services/:id
-// @access  Private (Admin)
+// @access  Public
 const updateService = asyncHandler(async (req, res) => {
   let service = await Service.findById(req.params.id);
 
@@ -174,7 +174,7 @@ const updateService = asyncHandler(async (req, res) => {
 
 // @desc    Delete service
 // @route   DELETE /api/services/:id
-// @access  Private (Admin)
+// @access  Public
 const deleteService = asyncHandler(async (req, res) => {
   const service = await Service.findById(req.params.id);
 
@@ -214,9 +214,9 @@ router.get('/search', validatePagination, searchServices);
 router.get('/category/:category', validatePagination, getServicesByCategory);
 router.get('/:id', validateObjectId('id'), getService);
 
-// Admin only routes (CRUD operations)
-router.post('/', protect, authorize('admin'), createService);
-router.put('/:id', protect, authorize('admin'), validateObjectId('id'), updateService);
-router.delete('/:id', protect, authorize('admin'), validateObjectId('id'), deleteService);
+// All routes are now public (no authentication required)
+router.post('/', createService);
+router.put('/:id', validateObjectId('id'), updateService);
+router.delete('/:id', validateObjectId('id'), deleteService);
 
 module.exports = router;
