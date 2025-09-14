@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Service = require('../models/Service');
+const Appointment = require('../models/Appointment');
 
 // Load environment variables
 require('dotenv').config();
@@ -297,11 +298,77 @@ const seedData = async () => {
 
     console.log('✅ Services created');
 
+    // Create sample appointments
+    const appointmentData = [
+      {
+        patient: {
+          firstName: 'John',
+          lastName: 'Doe',
+          phone: '+1-555-0101',
+          dateOfBirth: new Date('1985-05-15'),
+          gender: 'male'
+        },
+        doctor: doctor1._id,
+        service: (await Service.findOne({ name: 'General Consultation' }))._id,
+        appointmentDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+        appointmentTime: '10:00',
+        status: 'scheduled',
+        reason: 'Regular checkup',
+        notes: 'Patient requested morning appointment'
+      },
+      {
+        patient: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          phone: '+1-555-0102',
+          dateOfBirth: new Date('1990-08-22'),
+          gender: 'female'
+        },
+        doctor: doctor2._id,
+        service: (await Service.findOne({ name: 'Cardiology Consultation' }))._id,
+        appointmentDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+        appointmentTime: '14:30',
+        status: 'scheduled',
+        reason: 'Heart palpitations',
+        notes: 'Follow-up appointment'
+      },
+      {
+        patient: {
+          firstName: 'Mike',
+          lastName: 'Johnson',
+          phone: '+1-555-0103',
+          dateOfBirth: new Date('1978-12-10'),
+          gender: 'male'
+        },
+        doctor: doctor3._id,
+        service: (await Service.findOne({ name: 'Emergency Consultation' }))._id,
+        appointmentDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
+        appointmentTime: '09:00',
+        status: 'scheduled',
+        reason: 'Chest pain',
+        notes: 'Urgent consultation needed'
+      }
+    ];
+
+    for (const appointment of appointmentData) {
+      await Appointment.findOneAndUpdate(
+        { 
+          'patient.phone': appointment.patient.phone,
+          appointmentDate: appointment.appointmentDate
+        },
+        appointment,
+        { upsert: true, new: true }
+      );
+    }
+
+    console.log('✅ Appointments created');
+
     console.log('🎉 Database seeding completed successfully!');
     console.log('\n📋 Created:');
     console.log('- 1 Admin user (+1-555-000-0000)');
     console.log('- 3 Doctor users and profiles');
     console.log('- 6 Medical services');
+    console.log('- 3 Sample appointments');
     console.log('\n🔐 Default passwords:');
     console.log('- Admin: admin123');
     console.log('- Doctors: password123');

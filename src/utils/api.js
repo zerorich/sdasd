@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://sdasd-production-42f7.up.railway.app/api';
 
 class ApiService {
   constructor() {
@@ -103,6 +103,10 @@ class ApiService {
 
   async getAvailability(doctorId, date) {
     return this.get(`/appointments/availability/${doctorId}?date=${date}`);
+  }
+
+  async createAppointment(appointmentData) {
+    return this.post('/appointments', appointmentData);
   }
 
   // Contact

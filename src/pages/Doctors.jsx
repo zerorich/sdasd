@@ -56,9 +56,32 @@ const Doctors = () => {
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
     try {
-      // For now, just show success message
-      // In real app, this would submit to contact form
-      alert(`Appointment request submitted!\n\nDoctor: ${selectedDoctor || 'Any Available Doctor'}\nDate: ${formData.date}\nTime: ${formData.time}\nService: ${formData.service}`);
+      if (!selectedDoctor) {
+        alert('Please select a doctor first');
+        return;
+      }
+
+      const appointmentData = {
+        patient: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          dateOfBirth: new Date('1990-01-01'), // Default date
+          gender: 'other'
+        },
+        doctor: selectedDoctor._id,
+        service: formData.service,
+        appointmentDate: new Date(formData.date),
+        appointmentTime: formData.time,
+        type: 'consultation',
+        notes: formData.message,
+        symptoms: ''
+      };
+
+      const response = await api.createAppointment(appointmentData);
+      
+      alert(`Appointment booked successfully!\n\nAppointment ID: ${response.appointment._id}\nDoctor: ${selectedDoctor.user?.firstName} ${selectedDoctor.user?.lastName}\nDate: ${formData.date}\nTime: ${formData.time}`);
+      
       setShowAppointmentModal(false);
       setFormData({
         firstName: '',
@@ -71,8 +94,8 @@ const Doctors = () => {
       });
       setSelectedDoctor(null);
     } catch (error) {
-      console.error('Failed to submit appointment:', error);
-      alert('Failed to submit appointment. Please try again.');
+      console.error('Error booking appointment:', error);
+      alert('Failed to book appointment. Please try again.');
     }
   };
 
